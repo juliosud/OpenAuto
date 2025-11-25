@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/config/v2",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "next dev",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "functions": {
+    "app/api/chat/route.ts": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
+

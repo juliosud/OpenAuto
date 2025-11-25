@@ -48,7 +48,7 @@ interface ChatAPIResponse {
   parts?: PartSpec[];
 }
 
-type IconRenderer = (props: { className?: string }) => JSX.Element;
+type IconRenderer = React.ComponentType<{ className?: string }>;
 
 type InfoSection = {
   icon: IconRenderer;
@@ -164,6 +164,12 @@ export default function Home() {
   const [infoSearch, setInfoSearch] = useState("");
   const [previousInfoSection, setPreviousInfoSection] =
     useState<InfoSection | null>(null);
+  const [selectionBubble, setSelectionBubble] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const infoSections: InfoSection[] = [
     {
@@ -547,6 +553,44 @@ export default function Home() {
     scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading, selectedVehicleId]);
 
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (
+        !selection ||
+        selection.isCollapsed ||
+        selection.rangeCount === 0 ||
+        !selection.toString().trim()
+      ) {
+        setSelectionBubble(null);
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      setSelectionBubble({
+        text: selection.toString().trim(),
+        x: rect.left + rect.width / 2 + window.scrollX,
+        y: rect.top + window.scrollY - 16,
+      });
+    };
+
+    document.addEventListener("mouseup", handleSelectionChange);
+    document.addEventListener("keyup", handleSelectionChange);
+
+    return () => {
+      document.removeEventListener("mouseup", handleSelectionChange);
+      document.removeEventListener("keyup", handleSelectionChange);
+    };
+  }, []);
+
+  const handleAskFromSelection = () => {
+    if (!selectionBubble) return;
+    setSearchQuery(selectionBubble.text);
+    setSelectionBubble(null);
+    searchInputRef.current?.focus();
+  };
+
   const renderMessages = () =>
     messages.map((message) => (
       <div
@@ -800,8 +844,10 @@ export default function Home() {
         >
         <div className="h-full overflow-y-auto">
           <div
-            className={`w-full px-6 py-12 ${
-              drawerOpen ? "ml-auto max-w-full" : "mx-auto max-w-5xl"
+            className={`w-full ${
+              drawerOpen
+                ? "ml-auto pl-6 pr-3 py-10 max-w-full"
+                : "mx-auto px-6 py-12 max-w-5xl"
             }`}
           >
           {/* Header */}
@@ -848,7 +894,7 @@ export default function Home() {
 
             <div
               className={`max-w-4xl flex flex-col gap-10 pb-24 ${
-                drawerOpen ? "ml-auto w-full" : "mx-auto w-full"
+                drawerOpen ? "ml-auto pr-3 w-full" : "mx-auto w-full"
               }`}
             >
             <div className="space-y-6">{renderMessages()}</div>
@@ -874,6 +920,7 @@ export default function Home() {
             onChange={setSearchQuery}
             onSubmit={handleSearch}
             isLoading={isLoading}
+            inputRef={searchInputRef}
           />
               </div>
             </div>
@@ -884,7 +931,7 @@ export default function Home() {
 
         {/* Right Info Panel */}
         <aside
-          className={`hidden xl:flex flex-col border-l border-zinc-900 bg-zinc-950/80 backdrop-blur transition-all duration-300 ${
+          className={`hidden xl:flex flex-col bg-zinc-950/80 backdrop-blur transition-all duration-300 ${
             infoPanelOpen ? "w-80" : "w-12"
           }`}
         >
@@ -918,6 +965,20 @@ export default function Home() {
         </aside>
       </div>
 
+      {selectionBubble && (
+        <button
+          className="fixed z-40 px-3 py-1 rounded-full bg-accent text-black text-xs font-semibold shadow-lg shadow-black/30 border border-black/20"
+          style={{
+            top: Math.max(selectionBubble.y, 80),
+            left: selectionBubble.x,
+            transform: "translate(-50%, -100%)",
+          }}
+          onClick={handleAskFromSelection}
+        >
+          Ask OpenAuto
+        </button>
+      )}
+
       {/* Info Panel Drawer */}
       <AnimatePresence>
         {activeInfoSection && (
@@ -926,7 +987,7 @@ export default function Home() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="absolute right-0 top-0 h-full w-full md:w-1/2 bg-zinc-950 border-l border-zinc-800 overflow-y-auto shadow-2xl z-40"
+            className="absolute right-0 top-0 h-full w-full md:w-1/2 bg-zinc-950 overflow-y-auto shadow-2xl z-40"
           >
             <div className="sticky top-0 bg-zinc-950 border-b border-zinc-800 p-6 flex justify-between items-center z-10">
               <div className="flex items-center gap-3">
@@ -1209,12 +1270,12 @@ export default function Home() {
                       );
                     }
                     return (
-                      <div
+                      <p
                         key={idx}
-                        className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-300 whitespace-pre-wrap"
+                        className="text-zinc-300 leading-relaxed whitespace-pre-wrap"
                       >
                         {entry.value}
-                      </div>
+                      </p>
                     );
                   })}
                 </section>

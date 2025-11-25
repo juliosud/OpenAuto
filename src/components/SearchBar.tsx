@@ -8,6 +8,7 @@ interface SearchBarProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export default function SearchBar({
@@ -15,6 +16,7 @@ export default function SearchBar({
   onChange,
   onSubmit,
   isLoading,
+  inputRef,
 }: SearchBarProps) {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && value.trim()) {
@@ -33,6 +35,7 @@ export default function SearchBar({
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
         <input
           type="text"
+          ref={inputRef}
           placeholder="Ask for a diagnosis or specific part details…"
           value={value}
           onChange={(e) => onChange(e.target.value)}

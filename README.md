@@ -45,6 +45,28 @@ npm run build
 npm start
 ```
 
+### Environment Variables
+
+Create a `.env.local` file (not committed) with the OpenAI credential that powers the `/api/chat` route:
+
+```
+OPENAI_API_KEY=sk-your-openai-key
+```
+
+### Deploying to Vercel
+
+1. Install the Vercel CLI and log in if you have not already:
+
+   ```bash
+   npm install -g vercel
+   vercel login
+   ```
+2. From the `OpenAuto` directory run `vercel` to link or create a project. The provided `vercel.json` already pins the build, install, and dev commands to match `package.json`.
+3. In the Vercel dashboard (or via `vercel env`), add `OPENAI_API_KEY` under the Production, Preview, and Development environments.
+4. Trigger a deployment with `vercel --prod` (or let Git integrations do it). Vercel will run `npm install` and `npm run build`, producing the same optimized bundle verified locally.
+
+> The `app/api/chat` route is explicitly configured to run on the Node.js 20 runtime to maintain compatibility with the OpenAI SDK.
+
 ## Design System
 
 - **Background**: Black (#000)
