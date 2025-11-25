@@ -12,6 +12,8 @@ export interface Diagnosis {
     diagrams: string[];
     specs: string[];
     parts: { name: string; link: string }[];
+    rationale?: string;
+    sources?: { label: string; href?: string }[];
   };
 }
 
@@ -43,6 +45,30 @@ export default function DiagnosisCard({
           className="flex-1 cursor-pointer hover:text-accent transition-colors"
         >
           <p className="text-base leading-relaxed">{diagnosis.summary}</p>
+          {diagnosis.details.rationale && (
+            <p className="text-sm text-zinc-400 mt-2">
+              {diagnosis.details.rationale}
+            </p>
+          )}
+          {diagnosis.details.sources && diagnosis.details.sources.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-zinc-500">
+              {diagnosis.details.sources.map((source, idx) => (
+                <a
+                  key={idx}
+                  href={source.href || "#"}
+                  target={source.href ? "_blank" : undefined}
+                  rel={source.href ? "noopener noreferrer" : undefined}
+                  className={`px-2 py-1 rounded-full border border-zinc-800 ${
+                    source.href
+                      ? "hover:border-accent hover:text-accent transition-colors"
+                      : ""
+                  }`}
+                >
+                  {source.label || "Reference"}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 flex-shrink-0">

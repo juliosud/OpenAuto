@@ -33,7 +33,7 @@ export default function SearchBar({
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
         <input
           type="text"
-          placeholder="Type your car's symptoms…"
+          placeholder="Ask for a diagnosis or specific part details…"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
